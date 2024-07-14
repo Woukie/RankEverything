@@ -1,2 +1,3 @@
 FROM php:8.3.9-apache
-COPY src/ /var/www/html/
+COPY index.php /var/www/html/
+COPY vendor/ /var/www/html/vendor/

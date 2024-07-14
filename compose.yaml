@@ -1,9 +1,6 @@
-version: "3"
 services:
   rankeverything:
     image: woukie/rankeverything:latest
-    volumes:
-      - ./src:/var/www/html
     ports:
       - 8080:80
     depends_on:
