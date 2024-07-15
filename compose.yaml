@@ -14,5 +14,12 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       - mysql_data:/var/lib/mysql
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: rankeverything --interval 2
+    depends_on:
+      - rankeverything
 volumes:
   mysql_data:
