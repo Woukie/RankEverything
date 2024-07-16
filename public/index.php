@@ -54,7 +54,7 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
 $app->post('/submit_thing', function (Request $request, Response $response, $args) {
     global $conn;
 
-    $params = (array) $request->getParsedBody();
+    $params = json_decode($request->getBody(), true);
 
     echo '<br /> <pre>';
     print_r($params);
