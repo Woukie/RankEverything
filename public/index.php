@@ -61,7 +61,6 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
             array_key_exists('name', $params)
             && array_key_exists('imageUrl', $params)
             && array_key_exists('description', $params)
-            && array_key_exists('votes', $params)
             && array_key_exists('adult', $params)
         )
     ) {
@@ -71,12 +70,13 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
     $name = $params['name'];
     $imageUrl = $params['imageUrl'];
     $description = $params['description'];
-    $votes = $params['votes'];
     $adult = $params['adult'];
 
     if (
-        $conn->query("INSERT INTO Things (name, image_url, description, votes, adult)
-VALUES ($name, $imageUrl, $description, $votes, $adult)") === TRUE
+        $conn->query(
+            "INSERT INTO Things (name, image_url, description, adult)
+            VALUES ($name, $imageUrl, $description, $adult)"
+        ) === TRUE
     ) {
         echo "<br> New record created successfully";
     } else {
