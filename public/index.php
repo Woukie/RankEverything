@@ -22,7 +22,7 @@ echo "Connected to database successfully";
 
 // Create things table
 if (
-    $conn->query("CREATE TABLE Things (
+    $conn->query("CREATE TABLE IF NOT EXISTS Things (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name TINYTEXT NOT NULL,
     image_url TINYTEXT NOT NULL,
