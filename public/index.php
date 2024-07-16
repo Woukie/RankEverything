@@ -78,8 +78,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
 
     if (
         $conn->query(
-            "INSERT INTO Things (name, image_url, description, adult)
-            VALUES ($name, $imageUrl, $description, $adult)"
+            "INSERT INTO Things (name, image_url, description, adult) VALUES ('$name', '$imageUrl', '$description', '$adult')"
         ) === TRUE
     ) {
         echo "<br /> New record created successfully";
