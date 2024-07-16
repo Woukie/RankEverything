@@ -20,6 +20,23 @@ if ($conn->connect_error) {
 }
 echo "Connected to database successfully";
 
+// Create things table
+if (
+    $conn->query("CREATE TABLE Things (
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name TINYTEXT NOT NULL,
+    image_url TINYTEXT NOT NULL,
+    description TINYTEXT NOT NULL,
+    votes BIGINT(6) UNSIGNED NOT NULL,
+    adult BOOLEAN NOT NULL,
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )") === TRUE
+) {
+    echo "Table 'Things' created successfully";
+} else {
+    echo "Error creating table: " . $conn->error;
+}
+
 $app = AppFactory::create();
 
 $app->get('/', function (Request $request, Response $response, $args) {
