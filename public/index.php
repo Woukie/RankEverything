@@ -47,7 +47,7 @@ $app->get('/', function (Request $request, Response $response, $args) {
 $app->get('/get_comparison', function (Request $request, Response $response, $args) {
     $data = array("Test", "Data", "Toyota");
 
-    $response->getBody()->write(json_encode($data));
+    $response->getBody()->write("<br> " . json_encode($data));
     return $response;
 });
 
@@ -86,7 +86,7 @@ VALUES ($name, $imageUrl, $description, $votes, $adult)") === TRUE
 });
 
 $app->get('[/{params:.*}]', function ($request, $response, array $args) {
-    $response->getBody()->write("Unknown directory '" . $args['params'] . "'");
+    $response->getBody()->write("<br> Unknown directory '" . $args['params'] . "'");
     return $response;
 });
 
