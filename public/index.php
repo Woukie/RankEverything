@@ -16,9 +16,9 @@ $conn = new mysqli($dbhost, $dbuser, $dbpassword, $dbname, 3306);
 
 // Check connection
 if ($conn->connect_error) {
-    die("<br> Connection to database failed: " . $conn->connect_error);
+    die("<br /> Connection to database failed: " . $conn->connect_error);
 }
-echo "<br> Connected to database successfully";
+echo "<br /> Connected to database successfully";
 
 // Create things table
 if (
@@ -32,22 +32,22 @@ if (
     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )") === TRUE
 ) {
-    echo "<br> Table 'Things' created successfully";
+    echo "<br /> Table 'Things' created successfully";
 } else {
-    echo "<br> Error creating table: " . $conn->error;
+    echo "<br /> Error creating table: " . $conn->error;
 }
 
 $app = AppFactory::create();
 
 $app->get('/', function (Request $request, Response $response, $args) {
-    $response->getBody()->write("<br> Under construction! This is the Rank Everything backend. It will also probably be the distribution page.");
+    $response->getBody()->write("<br /> Under construction! This is the Rank Everything backend. It will also probably be the distribution page.");
     return $response;
 });
 
 $app->get('/get_comparison', function (Request $request, Response $response, $args) {
     $data = array("Test", "Data", "Toyota");
 
-    $response->getBody()->write("<br> " . json_encode($data));
+    $response->getBody()->write("<br /> " . json_encode($data));
     return $response;
 });
 
@@ -56,7 +56,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
 
     $params = (array) $request->getParsedBody();
 
-    echo "<br> " . $params;
+    echo "<br /> " . $params;
 
     if (
         !(
@@ -66,7 +66,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
             && array_key_exists('adult', $params)
         )
     ) {
-        die('<br> Must specify all parameters');
+        die('<br /> Must specify all parameters');
     }
 
     $name = $params['name'];
@@ -80,15 +80,15 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
             VALUES ($name, $imageUrl, $description, $adult)"
         ) === TRUE
     ) {
-        echo "<br> New record created successfully";
+        echo "<br /> New record created successfully";
     } else {
-        echo "<br> Error submitting thing: " . $conn->error;
+        echo "<br /> Error submitting thing: " . $conn->error;
     }
     return $response;
 });
 
 $app->get('[/{params:.*}]', function ($request, $response, array $args) {
-    $response->getBody()->write("<br> Unknown directory '" . $args['params'] . "'");
+    $response->getBody()->write("<br /> Unknown directory '" . $args['params'] . "'");
     return $response;
 });
 
