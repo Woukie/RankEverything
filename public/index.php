@@ -56,7 +56,9 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
 
     $params = (array) $request->getParsedBody();
 
-    echo "<br /> " . $params;
+    echo '<br /> <pre>';
+    print_r($params);
+    echo '</pre>';
 
     if (
         !(
