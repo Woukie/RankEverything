@@ -16,7 +16,7 @@ $conn = new mysqli($dbhost, $dbuser, $dbpassword, $dbname, 3306);
 
 // Check connection
 if ($conn->connect_error) {
-    die("Connection to database failed: " . $conn->connect_error);
+    die("<br> Connection to database failed: " . $conn->connect_error);
 }
 echo "<br> Connected to database successfully";
 
@@ -56,6 +56,8 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
 
     $params = (array) $request->getParsedBody();
 
+    echo "<br> " . $params;
+
     if (
         !(
             array_key_exists('name', $params)
@@ -64,7 +66,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
             && array_key_exists('adult', $params)
         )
     ) {
-        die('Must specify all parameters');
+        die('<br> Must specify all parameters');
     }
 
     $name = $params['name'];
