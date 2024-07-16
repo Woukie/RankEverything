@@ -77,7 +77,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
     $adult = $params['adult'];
 
     $insertStatement = $conn->prepare("INSERT INTO Things (name, image_url, description, adult) VALUES (?, ?, ?, ?)");
-    $insertStatement->bind_param("is", $name, $imageUrl, $description, $adult);
+    $insertStatement->bind_param("sssi", $name, $imageUrl, $description, $adult);
 
     if ($insertStatement->execute() === TRUE) {
         echo "<br /> New record created successfully";
