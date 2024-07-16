@@ -18,7 +18,7 @@ $conn = new mysqli($dbhost, $dbuser, $dbpassword, $dbname, 3306);
 if ($conn->connect_error) {
     die("Connection to database failed: " . $conn->connect_error);
 }
-echo "Connected to database successfully";
+echo "<br> Connected to database successfully";
 
 // Create things table
 if (
@@ -32,15 +32,15 @@ if (
     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )") === TRUE
 ) {
-    echo "Table 'Things' created successfully";
+    echo "<br> Table 'Things' created successfully";
 } else {
-    echo "Error creating table: " . $conn->error;
+    echo "<br> Error creating table: " . $conn->error;
 }
 
 $app = AppFactory::create();
 
 $app->get('/', function (Request $request, Response $response, $args) {
-    $response->getBody()->write("Under construction! This is the Rank Everything backend. It will also probably be the distribution page.");
+    $response->getBody()->write("<br> Under construction! This is the Rank Everything backend. It will also probably be the distribution page.");
     return $response;
 });
 
@@ -48,6 +48,40 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
     $data = array("Test", "Data", "Toyota");
 
     $response->getBody()->write(json_encode($data));
+    return $response;
+});
+
+$app->post('/submit_thing', function (Request $request, Response $response, $args) {
+    global $conn;
+
+    $params = (array) $request->getParsedBody();
+
+    if (
+        !(
+            array_key_exists('name', $params)
+            && array_key_exists('imageUrl', $params)
+            && array_key_exists('description', $params)
+            && array_key_exists('votes', $params)
+            && array_key_exists('adult', $params)
+        )
+    ) {
+        die('Must specify all parameters');
+    }
+
+    $name = $params['name'];
+    $imageUrl = $params['imageUrl'];
+    $description = $params['description'];
+    $votes = $params['votes'];
+    $adult = $params['adult'];
+
+    if (
+        $conn->query("INSERT INTO Things (name, image_url, description, votes, adult)
+VALUES ($name, $imageUrl, $description, $votes, $adult)") === TRUE
+    ) {
+        echo "<br> New record created successfully";
+    } else {
+        echo "<br> Error submitting thing: " . $conn->error;
+    }
     return $response;
 });
 
