@@ -76,11 +76,10 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
     $description = $params['description'];
     $adult = $params['adult'];
 
-    if (
-        $conn->query(
-            "INSERT INTO Things (name, image_url, description, adult) VALUES ('$name', '$imageUrl', '$description', '$adult')"
-        ) === TRUE
-    ) {
+    $insertStatement = $conn->prepare("INSERT INTO Things (name, image_url, description, adult) VALUES (?, ?, ?, ?)");
+    $insertStatement->bind_param("is", $name, $imageUrl, $description, $adult);
+
+    if ($insertStatement->execute() === TRUE) {
         echo "<br /> New record created successfully";
     } else {
         echo "<br /> Error submitting thing: " . $conn->error;
