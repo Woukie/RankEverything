@@ -87,9 +87,8 @@ $app->post('/submit_vote', function (Request $request, Response $response, $args
 
     $log->info("Voting for row: $row");
     $statement = $conn->prepare("UPDATE Things SET votes = votes + 1 WHERE id = ?");
-    $statement->bind_param("i", $row);
 
-    if ($statement->execute() === TRUE) {
+    if ($statement->execute([$row]) === TRUE) {
         $log->info("Vote registered");
     } else {
         $log->error("Error submitting vote: " . $conn->error);
