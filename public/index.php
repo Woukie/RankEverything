@@ -82,10 +82,10 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
     $description = $params['description'];
     $adult = $params['adult'];
 
-    $insertStatement = $conn->prepare("INSERT INTO Things (name, image_url, description, adult) VALUES (?, ?, ?, ?)");
-    $insertStatement->bind_param("sssi", $name, $imageUrl, $description, $adult);
+    $insert_statement = $conn->prepare("INSERT INTO Things (name, image_url, description, adult) VALUES (?, ?, ?, ?)");
+    $insert_statement->bind_param("sssi", $name, $imageUrl, $description, $adult);
 
-    if ($insertStatement->execute() === TRUE) {
+    if ($insert_statement->execute() === TRUE) {
         echo "<br /> New record created successfully";
     } else {
         echo "<br /> Error submitting thing: " . $conn->error;
