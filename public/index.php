@@ -86,14 +86,30 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
     return $response->withHeader('Content-Type', 'application/json');
 });
 
+$app->post('/submit_vote', function (Request $request, Response $response, $args) {
+    global $conn, $log;
+
+    $log->info("Serving '/submit_vote' endpoint");
+
+    $row = $request->getBody();
+
+    $statement = $conn->prepare("UPDATE Things SET votes = votes + 1 WHERE id = ?");
+    $statement->bind_param("i", $row);
+
+    if ($statement->execute() === TRUE) {
+        $log->info("Vote registered");
+    } else {
+        $log->error("Error submitting vote: " . $conn->error);
+    }
+
+    $log->info("Served '/submit_vote' endpoint");
+});
+
 $app->post('/submit_thing', function (Request $request, Response $response, $args) {
     global $conn, $log;
     $log->info("Serving '/submit_thing' endpoint");
 
     $params = json_decode($request->getBody(), true);
-
-
-    $log->info("Recieved body: $params");
 
     if (
         !(
