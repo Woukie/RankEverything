@@ -61,9 +61,22 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
     global $conn, $log;
     $log->info("Serving '/get_comparison' endpoint");
 
+    // https://stackoverflow.com/a/4329447
     $things = array();
     for ($i = 0; $i < 2; $i++) {
-        array_push($things, $conn->query("SELECT ROUND(RAND() * (SELECT COUNT(*) FROM Things))"));
+        array_push(
+            $things,
+            $conn->query(
+                "SELECT * FROM Things AS r1 JOIN
+                    (SELECT CEIL(RAND() *
+                                    (SELECT MAX(id)
+                                        FROM Things)) AS id)
+                        AS r2
+                WHERE r1.id >= r2.id
+                ORDER BY r1.id ASC
+                LIMIT 1"
+            )
+        );
     }
 
     $response->getBody()->write(json_encode($things));
