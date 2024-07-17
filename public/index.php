@@ -61,9 +61,14 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
     global $conn, $log;
     $log->info("Serving '/get_comparison' endpoint");
 
+    $things = array();
+
     // https://stackoverflow.com/a/41581041
     $result = $conn->query("SELECT * FROM Things AS t1 JOIN (SELECT id FROM Things ORDER BY RAND() LIMIT 2) as t2 ON t1.id=t2.id");
-    $things = $result->fetch_all();
+    for ($i = 0; $i < 2; $i++) {
+        $thing = $result->fetch_assoc();
+        array_push($thing);
+    }
 
     $json_things = json_encode($things);
     $log->info("Got things from database: $json_things");
