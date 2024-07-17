@@ -83,7 +83,7 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
     $response->getBody()->write(json_encode($json_things));
     $log->info("Served '/get_comparison' endpoint");
 
-    return $response;
+    return $response->withHeader('Content-Type', 'application/json');
 });
 
 $app->post('/submit_thing', function (Request $request, Response $response, $args) {
