@@ -45,9 +45,14 @@ $app->get('/', function (Request $request, Response $response, $args) {
 });
 
 $app->get('/get_comparison', function (Request $request, Response $response, $args) {
-    $data = array("Test", "Data", "Toyota");
+    global $conn;
 
-    $response->getBody()->write("<br /> " . json_encode($data));
+    $things = array();
+    for ($i = 0; $i < 2; $i++) {
+        array_push($things, $conn->query("SELECT ROUND(RAND() * (SELECT COUNT(*) FROM Things))"));
+    }
+
+    $response->getBody()->write(json_encode($things));
     return $response;
 });
 
@@ -55,6 +60,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
     global $conn;
 
     $params = json_decode($request->getBody(), true);
+
 
     echo '<br /> <pre>';
     print_r($params);
