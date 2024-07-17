@@ -3,6 +3,10 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 
+use Monolog\Level;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
 require __DIR__ . '/vendor/autoload.php';
 
 $dbhost = $_ENV['DB_HOST'];
@@ -10,15 +14,19 @@ $dbname = $_ENV['DB_NAME'];
 $dbuser = $_ENV['DB_USER'];
 $dbpassword = $_ENV['DB_PASSWORD'];
 
+$log = new Logger('all');
+$log->pushHandler(new StreamHandler('logs/all.log', Level::Info));
+
 // Create connection
-echo "Connecting to database '$dbname' on '$dbhost' as user '$dbuser'...";
+$log->info("Connecting to database '$dbname' on '$dbhost' as user '$dbuser'...");
 $conn = new mysqli($dbhost, $dbuser, $dbpassword, $dbname, 3306);
 
 // Check connection
 if ($conn->connect_error) {
-    die("<br /> Connection to database failed: " . $conn->connect_error);
+    $log->error("Connection to database failed: " . $conn->connect_error);
+    die("Database is down, can't take traffic!");
 }
-echo "<br /> Connected to database successfully";
+$log->info("Connected to database successfully");
 
 // Create things table
 if (
@@ -32,20 +40,26 @@ if (
     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )") === TRUE
 ) {
-    echo "<br /> Table 'Things' created successfully";
+    $log->info("Table 'Things' created successfully");
 } else {
-    echo "<br /> Error creating table: " . $conn->error;
+    $log->error("Error creating table: " . $conn->error);
 }
 
 $app = AppFactory::create();
 
 $app->get('/', function (Request $request, Response $response, $args) {
-    $response->getBody()->write("<br /> Under construction! This is the Rank Everything backend. It will also probably be the distribution page.");
+    global $log;
+
+    $log->info("Serving '/' endpoint");
+    $response->getBody()->write("Under construction! This is the Rank Everything backend. It will also probably be the distribution page.");
+    $log->info("Served '/' endpoint");
+
     return $response;
 });
 
 $app->get('/get_comparison', function (Request $request, Response $response, $args) {
-    global $conn;
+    global $conn, $log;
+    $log->info("Serving '/get_comparison' endpoint");
 
     $things = array();
     for ($i = 0; $i < 2; $i++) {
@@ -53,18 +67,19 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
     }
 
     $response->getBody()->write(json_encode($things));
+    $log->info("Served '/get_comparison' endpoint");
+
     return $response;
 });
 
 $app->post('/submit_thing', function (Request $request, Response $response, $args) {
-    global $conn;
+    global $conn, $log;
+    $log->info("Serving '/submit_thing' endpoint");
 
     $params = json_decode($request->getBody(), true);
 
 
-    echo '<br /> <pre>';
-    print_r($params);
-    echo '</pre>';
+    $log->info("Recieved body: $params");
 
     if (
         !(
@@ -74,7 +89,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
             && array_key_exists('adult', $params)
         )
     ) {
-        die('<br /> Must specify all parameters');
+        die('Must specify all parameters');
     }
 
     $name = $params['name'];
@@ -86,10 +101,13 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
     $insert_statement->bind_param("sssi", $name, $imageUrl, $description, $adult);
 
     if ($insert_statement->execute() === TRUE) {
-        echo "<br /> New record created successfully";
+        $log->info("New record created successfully");
     } else {
-        echo "<br /> Error submitting thing: " . $conn->error;
+        $log->error("Error submitting thing: " . $conn->error);
     }
+
+    $log->info("Served '/submit_thing' endpoint");
+
     return $response;
 });
 
