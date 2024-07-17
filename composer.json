@@ -3,6 +3,7 @@
   "description": "Simple slim PHP backend for RankEverything",
   "require": {
     "slim/slim": "4.*",
-    "slim/psr7": "^1.7"
+    "slim/psr7": "^1.7",
+    "monolog/monolog": "^3.7.0"
   }
 }
