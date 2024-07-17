@@ -79,7 +79,9 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
         );
     }
 
-    $response->getBody()->write(json_encode($things));
+    $json_things = json_encode($things);
+    $log->info("Got things from database: $json_things");
+    $response->getBody()->write(json_encode($json_things));
     $log->info("Served '/get_comparison' endpoint");
 
     return $response;
