@@ -80,7 +80,7 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
 
     $json_things = json_encode($things);
     $log->info("Got things from database: $json_things");
-    $response->getBody()->write(json_encode($json_things));
+    $response->getBody()->write($json_things);
     $log->info("Served '/get_comparison' endpoint");
 
     return $response->withHeader('Content-Type', 'application/json');
