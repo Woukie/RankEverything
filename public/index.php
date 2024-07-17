@@ -67,7 +67,7 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
     $result = $conn->query("SELECT * FROM Things AS t1 JOIN (SELECT id FROM Things ORDER BY RAND() LIMIT 2) as t2 ON t1.id=t2.id");
     for ($i = 0; $i < 2; $i++) {
         $thing = $result->fetch_assoc();
-        array_push($thing);
+        array_push($things, $thing);
     }
 
     $json_things = json_encode($things);
