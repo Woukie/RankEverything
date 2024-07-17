@@ -112,7 +112,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
 });
 
 $app->get('[/{params:.*}]', function ($request, $response, array $args) {
-    $response->getBody()->write("<br /> Unknown directory '" . $args['params'] . "'");
+    $response->getBody()->write("Unknown directory '" . $args['params'] . "'");
     return $response;
 });
 
