@@ -70,9 +70,7 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
         array_push($things, $thing);
     }
 
-    $json_things = json_encode($things);
-    $log->info("Got things from database: $json_things");
-    $response->getBody()->write($json_things);
+    $response->getBody()->write(json_encode($things));
     $log->info("Served '/get_comparison' endpoint");
 
     return $response->withHeader('Content-Type', 'application/json');
@@ -118,8 +116,6 @@ $app->post('/search', function (Request $request, Response $response, $args) {
 
         for ($i = 0; $i < $result->num_rows; $i++) {
             $thing = $result->fetch_assoc();
-            $log->info(json_encode($thing));
-
             array_push($things, $thing);
         }
 
