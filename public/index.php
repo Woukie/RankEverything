@@ -78,6 +78,43 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
     return $response->withHeader('Content-Type', 'application/json');
 });
 
+$app->post('/search', function (Request $request, Response $response, $args) {
+    global $conn, $log;
+
+    $log->info("Serving '/search' endpoint");
+
+    $params = json_decode($request->getBody(), true);
+
+    if (
+        !(
+            array_key_exists('query', $params)
+            && array_key_exists('ascending', $params)
+        )
+    ) {
+        die('Must specify all parameters');
+    }
+
+    $query = $params['query'];
+    $ascending = $params['ascending'];
+
+    $log->info("Searching for " . $query . $ascending ? " ascending" : " descending");
+    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes ? LIMIT 10");
+
+    if ($statement->execute([$query, $ascending ? "ASC" : "DESC"]) === TRUE) {
+        $things = array();
+        while ($thing = $statement->fetch()) {
+            array_push($things, $thing);
+        }
+
+        $log->info("Successfully executed search");
+        $response->getBody()->write(json_encode($things));
+    } else {
+        $log->error("Error searching: " . $conn->error);
+    }
+
+    $log->info("Served '/search' endpoint");
+});
+
 $app->post('/submit_vote', function (Request $request, Response $response, $args) {
     global $conn, $log;
 
