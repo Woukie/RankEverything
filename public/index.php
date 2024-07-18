@@ -64,13 +64,21 @@ $app->get('/get_comparison', function (Request $request, Response $response, $ar
     $things = array();
 
     // https://stackoverflow.com/a/41581041
-    $result = $conn->query("SELECT * FROM Things AS t1 JOIN (SELECT id FROM Things ORDER BY RAND() LIMIT 2) as t2 ON t1.id=t2.id");
-    for ($i = 0; $i < 2; $i++) {
-        $thing = $result->fetch_assoc();
-        array_push($things, $thing);
+    $statement = $conn->prepare("SELECT * FROM Things AS t1 JOIN (SELECT id FROM Things ORDER BY RAND() LIMIT 2) as t2 ON t1.id=t2.id");
+
+    if ($statement->execute() === true) {
+        $result = $statement->get_result();
+
+        for ($i = 0; $i < $result->num_rows; $i++) {
+            $thing = $result->fetch_assoc();
+            array_push($things, $thing);
+        }
+
+        $response->getBody()->write(json_encode($things));
+    } else {
+        $log->error("Error getting comparison: " . $conn->error);
     }
 
-    $response->getBody()->write(json_encode($things));
     $log->info("Served '/get_comparison' endpoint");
 
     return $response->withHeader('Content-Type', 'application/json');
