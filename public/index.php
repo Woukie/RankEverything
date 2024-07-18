@@ -99,12 +99,12 @@ $app->post('/search', function (Request $request, Response $response, $args) {
 
     $log->info("Searching for " . $query . $ascending ? " ascending" : " descending");
 
-    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes DESC LIMIT 10");
-    if ($ascending) {
-        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes ASC LIMIT 10");
-    }
+    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes ? LIMIT 10");
 
-    if ($statement->execute([$query]) === TRUE) {
+    $ascending = $ascending ? "ASC" : "DESC";
+    $statement->bind_param('ss', $query, $ascending);
+
+    if ($statement->execute() === TRUE) {
         $things = array();
         while ($thing = $statement->fetch()) {
             array_push($things, $thing);
