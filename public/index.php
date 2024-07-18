@@ -97,20 +97,25 @@ $app->post('/search', function (Request $request, Response $response, $args) {
     $query = $params['query'];
     $ascending = filter_var($params['ascending'], FILTER_VALIDATE_BOOLEAN);
 
-    $log->info("Searching for " . $query . $ascending ? " ascending" : " descending");
+    $log->info("Searching for $query, ascending: $ascending");
 
-    // Cannot substitude ASC/DESC
     if ($ascending) {
-        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes ASC LIMIT 10");
+        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE ? ORDER BY votes ASC LIMIT 10");
     } else {
-        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes DESC LIMIT 10");
+        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE ? ORDER BY votes DESC LIMIT 10");
     }
 
+    $query = "%$query%";
     $statement->bind_param('s', $query);
 
-    if ($statement->execute() === TRUE) {
+    if ($statement->execute() === true) {
+        $result = $statement->get_result();
         $things = array();
-        while ($thing = $statement->fetch()) {
+
+        for ($i = 0; $i < $result->num_rows; $i++) {
+            $thing = $result->fetch_assoc();
+            $log->info(json_encode($thing));
+
             array_push($things, $thing);
         }
 
@@ -121,6 +126,8 @@ $app->post('/search', function (Request $request, Response $response, $args) {
     }
 
     $log->info("Served '/search' endpoint");
+
+    return $response->withHeader('Content-Type', 'application/json');
 });
 
 $app->post('/submit_vote', function (Request $request, Response $response, $args) {
