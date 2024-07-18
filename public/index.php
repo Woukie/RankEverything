@@ -95,10 +95,14 @@ $app->post('/search', function (Request $request, Response $response, $args) {
     }
 
     $query = $params['query'];
-    $ascending = $params['ascending'];
+    $ascending = filter_var($params['ascending'], FILTER_VALIDATE_BOOLEAN);
 
     $log->info("Searching for " . $query . $ascending ? " ascending" : " descending");
-    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes ASC LIMIT 10");
+    if ($ascending) {
+        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes ASC LIMIT 10");
+    } else {
+        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes DESC LIMIT 10");
+    }
 
     if ($statement->execute([$query]) === TRUE) {
         $things = array();
