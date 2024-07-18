@@ -99,10 +99,14 @@ $app->post('/search', function (Request $request, Response $response, $args) {
 
     $log->info("Searching for " . $query . $ascending ? " ascending" : " descending");
 
-    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes ? LIMIT 10");
+    // Cannot substitude ASC/DESC
+    if ($ascending) {
+        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes ASC LIMIT 10");
+    } else {
+        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes DESC LIMIT 10");
+    }
 
-    $ascending = $ascending ? "ASC" : "DESC";
-    $statement->bind_param('ss', $query, $ascending);
+    $statement->bind_param('s', $query);
 
     if ($statement->execute() === TRUE) {
         $things = array();
