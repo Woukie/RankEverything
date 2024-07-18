@@ -85,6 +85,10 @@ $app->post('/search', function (Request $request, Response $response, $args) {
 
     $params = json_decode($request->getBody(), true);
 
+    if (!$params) {
+        die("Request must contain a body");
+    }
+
     if (
         !(
             array_key_exists('query', $params)
@@ -136,6 +140,10 @@ $app->post('/submit_vote', function (Request $request, Response $response, $args
     $log->info("Serving '/submit_vote' endpoint");
 
     $row = $request->getBody();
+
+    if (!$row) {
+        die("Request must contain a body");
+    }
 
     $log->info("Voting for row: $row");
     $statement = $conn->prepare("UPDATE Things SET votes = votes + 1 WHERE id = ?");
