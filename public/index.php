@@ -98,7 +98,7 @@ $app->post('/search', function (Request $request, Response $response, $args) {
     $ascending = $params['ascending'];
 
     $log->info("Searching for " . $query . $ascending ? " ascending" : " descending");
-    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes " . $ascending ? "ASC" : "DESC" . " LIMIT 10");
+    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE '%?%' ORDER BY votes ASC LIMIT 10");
 
     if ($statement->execute([$query]) === TRUE) {
         $things = array();
