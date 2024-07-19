@@ -100,15 +100,6 @@ $app->post('/search', function (Request $request, Response $response, $args) {
         die("Request must contain a body");
     }
 
-    if (
-        !(
-            array_key_exists('query', $params)
-            && array_key_exists('ascending', $params)
-        )
-    ) {
-        die('Must specify all parameters');
-    }
-
     $query = $params['query'] ?? "";
     $adult = filter_var($params['adult'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $ascending = filter_var($params['ascending'] ?? false, FILTER_VALIDATE_BOOLEAN);
