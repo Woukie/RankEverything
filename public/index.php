@@ -96,10 +96,6 @@ $app->post('/search', function (Request $request, Response $response, $args) {
 
     $params = json_decode($request->getBody(), true);
 
-    if (!$params) {
-        die("Request must contain a body");
-    }
-
     $query = $params['query'] ?? "";
     $adult = filter_var($params['adult'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $ascending = filter_var($params['ascending'] ?? false, FILTER_VALIDATE_BOOLEAN);
