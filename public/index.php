@@ -110,15 +110,12 @@ $app->post('/search', function (Request $request, Response $response, $args) {
     }
 
     $query = $params['query'];
-    $ascending = filter_var($params['ascending'], FILTER_VALIDATE_BOOLEAN);
+    $adult = filter_var($params['adult'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $ascending = filter_var($params['ascending'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-    $log->info("Searching for $query, ascending: $ascending");
+    $log->info("Searching for $query, ascending: $ascending, adult: $adult");
 
-    if ($ascending) {
-        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE ? ORDER BY votes ASC LIMIT 10");
-    } else {
-        $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE ? ORDER BY votes DESC LIMIT 10");
-    }
+    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE ?" . ($adult ? "" : " AND !adult") . " ORDER BY votes " . ($ascending ? "ASC" : "DESC") . " LIMIT 10");
 
     $query = "%$query%";
     $statement->bind_param('s', $query);
