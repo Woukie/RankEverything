@@ -159,11 +159,15 @@ $app->post('/submit_vote', function (Request $request, Response $response, $args
 
     if ($statement->execute([$row]) === TRUE) {
         $log->info("Vote registered");
+        $response->getBody()->write(true);
     } else {
         $log->error("Error submitting vote: " . $conn->error);
+        die("Something went wrong");
     }
 
     $log->info("Served '/submit_vote' endpoint");
+
+    return $response;
 });
 
 $app->post('/submit_thing', function (Request $request, Response $response, $args) {
