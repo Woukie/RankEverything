@@ -197,8 +197,10 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
 
     if ($insert_statement->execute() === TRUE) {
         $log->info("New record created successfully");
+        $response->getBody()->write(true);
     } else {
         $log->error("Error submitting thing: " . $conn->error);
+        die("Something went wrong");
     }
 
     $log->info("Served '/submit_thing' endpoint");
