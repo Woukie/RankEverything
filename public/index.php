@@ -57,15 +57,20 @@ $app->get('/', function (Request $request, Response $response, $args) {
     return $response;
 });
 
-$app->get('/get_comparison', function (Request $request, Response $response, $args) {
+$app->get('/get_comparison[/{adult}]', function (Request $request, Response $response, $args) {
     global $conn, $log;
     $log->info("Serving '/get_comparison' endpoint");
 
-    $things = array();
+    $adult = filter_var($args['adult'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
     // https://stackoverflow.com/a/41581041
-    $statement = $conn->prepare("SELECT * FROM Things AS t1 JOIN (SELECT id FROM Things ORDER BY RAND() LIMIT 2) as t2 ON t1.id=t2.id");
+    if (!$adult) {
+        $statement = $conn->prepare("SELECT * FROM Things AS t1 JOIN (SELECT id FROM Things WHERE !adult ORDER BY RAND() LIMIT 2) as t2 ON t1.id=t2.id");
+    } else {
+        $statement = $conn->prepare("SELECT * FROM Things AS t1 JOIN (SELECT id FROM Things ORDER BY RAND() LIMIT 2) as t2 ON t1.id=t2.id");
+    }
 
+    $things = array();
     if ($statement->execute() === true) {
         $result = $statement->get_result();
 
@@ -181,7 +186,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
     $name = $params['name'];
     $imageUrl = $params['imageUrl'];
     $description = $params['description'];
-    $adult = $params['adult'];
+    $adult = filter_var($params['adult'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
     $insert_statement = $conn->prepare("INSERT INTO Things (name, image_url, description, adult) VALUES (?, ?, ?, ?)");
     $insert_statement->bind_param("sssi", $name, $imageUrl, $description, $adult);
