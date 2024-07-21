@@ -150,9 +150,6 @@ $app->post('/submit_vote', function (Request $request, Response $response, $args
         die("Something went wrong");
     }
 
-    $log->info("Votes registered");
-
-    $response->getBody()->write(true);
     $log->info("Served '/submit_vote' endpoint");
 
     return $response;
