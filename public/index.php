@@ -133,7 +133,7 @@ $app->post('/submit_vote', function (Request $request, Response $response, $args
 
     $log->info("Serving '/submit_vote' endpoint");
 
-    $params = $request->getBody();
+    $params = json_decode($request->getBody(), true);
 
     $like_id = $params['like'];
     $dislike_id = $params['dislike'];
