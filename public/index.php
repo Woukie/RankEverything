@@ -35,7 +35,8 @@ if (
     name TINYTEXT NOT NULL,
     image_url TINYTEXT NOT NULL,
     description TINYTEXT NOT NULL,
-    votes BIGINT(6) UNSIGNED DEFAULT 0 NOT NULL,
+    likes BIGINT(6) UNSIGNED DEFAULT 0 NOT NULL,
+    dislikes BIGINT(6) UNSIGNED DEFAULT 0 NOT NULL,
     adult BOOLEAN NOT NULL,
     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )") === TRUE
@@ -102,7 +103,7 @@ $app->post('/search', function (Request $request, Response $response, $args) {
 
     $log->info("Searching for $query, ascending: $ascending, adult: $adult");
 
-    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE ?" . ($adult ? "" : " AND !adult") . " ORDER BY votes " . ($ascending ? "ASC" : "DESC") . " LIMIT 10");
+    $statement = $conn->prepare("SELECT * FROM Things WHERE name LIKE ?" . ($adult ? "" : " AND !adult") . " ORDER BY likes / (likes + dislikes) " . ($ascending ? "ASC" : "DESC") . " LIMIT 10");
 
     $query = "%$query%";
     $statement->bind_param('s', $query);
@@ -132,23 +133,26 @@ $app->post('/submit_vote', function (Request $request, Response $response, $args
 
     $log->info("Serving '/submit_vote' endpoint");
 
-    $row = $request->getBody();
+    $params = $request->getBody();
 
-    if (!$row) {
-        die("Request must contain a body");
+    $like_id = $params['like'];
+    $dislike_id = $params['dislike'];
+
+    if (!$like_id || !$dislike_id) {
+        die("Request must contain both ids");
     }
 
-    $log->info("Voting for row: $row");
-    $statement = $conn->prepare("UPDATE Things SET votes = votes + 1 WHERE id = ?");
+    $like_statement = $conn->prepare("UPDATE Things SET likes = likes + 1 WHERE id = ?");
+    $dislike_statement = $conn->prepare("UPDATE Things SET dislikes = dislikes + 1 WHERE id = ?");
 
-    if ($statement->execute([$row]) === TRUE) {
-        $log->info("Vote registered");
-        $response->getBody()->write(true);
-    } else {
+    if (!$like_statement->execute([$like_id]) || !$dislike_statement->execute([$dislike_id])) {
         $log->error("Error submitting vote: " . $conn->error);
         die("Something went wrong");
     }
 
+    $log->info("Votes registered");
+
+    $response->getBody()->write(true);
     $log->info("Served '/submit_vote' endpoint");
 
     return $response;
