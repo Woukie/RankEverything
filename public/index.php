@@ -193,7 +193,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
 
     // Reject duplicate names
 
-    $duplicate_name_statement = $conn->prepare('SELECT id FROM Things WHERE name = ? LIMIT 1');
+    $duplicate_name_statement = $conn->prepare("SELECT id FROM Things WHERE UPPER(name) LIKE UPPER(?) LIMIT 1");
     $duplicate_name_statement->bind_param('s', $name);
 
     if ($duplicate_name_statement->execute() === false) {
@@ -205,7 +205,6 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
 
     $result = $duplicate_name_statement->get_result();
     if ($result->num_rows != 0) {
-        $response_body['rows'] = $result->num_rows;
         $response_body['status'] = 'error';
         $response_body['message'] = 'Name already used';
         $response_body['param'] = 'name';
