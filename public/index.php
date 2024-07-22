@@ -32,13 +32,13 @@ $log->info("Connected to database successfully");
 if (
     $conn->query("CREATE TABLE IF NOT EXISTS Things (
     id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name TINYTEXT NOT NULL,
+    name varchar(255) NOT NULL UNIQUE,
     image_url TINYTEXT NOT NULL,
     description TINYTEXT NOT NULL,
     likes BIGINT(6) UNSIGNED DEFAULT 0 NOT NULL,
     dislikes BIGINT(6) UNSIGNED DEFAULT 0 NOT NULL,
     adult BOOLEAN NOT NULL,
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     )") === TRUE
 ) {
     $log->info("Table 'Things' created successfully");
@@ -189,7 +189,7 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
 
     $log->info("Served '/submit_thing' endpoint");
 
-    return $response;
+    return $response->withHeader('Content-Type', 'application/json');
 });
 
 $app->get('[/{params:.*}]', function ($request, $response, array $args) {
