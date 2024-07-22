@@ -38,7 +38,7 @@ if (
     likes BIGINT(6) UNSIGNED DEFAULT 0 NOT NULL,
     dislikes BIGINT(6) UNSIGNED DEFAULT 0 NOT NULL,
     adult BOOLEAN NOT NULL,
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )") === TRUE
 ) {
     $log->info("Table 'Things' created successfully");
@@ -160,16 +160,30 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
     $log->info("Serving '/submit_thing' endpoint");
 
     $params = json_decode($request->getBody(), true);
+    $response_body = array();
+
+    // Input sanitisation
+
+    function paramExists($key, &$array, &$response_body)
+    {
+        if (!array_key_exists($key, $array) || $array[$key] == "") {
+            $response_body['status'] = 'error';
+            $response_body['message'] = "Field cannot be empty";
+            $response_body['param'] = $key;
+            return false;
+        }
+
+        return true;
+    }
 
     if (
-        !(
-            array_key_exists('name', $params)
-            && array_key_exists('imageUrl', $params)
-            && array_key_exists('description', $params)
-            && array_key_exists('adult', $params)
-        )
+        !paramExists('name', $params, $response_body) ||
+        !paramExists('description', $params, $response_body) ||
+        !paramExists('imageUrl', $params, $response_body) ||
+        !paramExists('adult', $params, $response_body)
     ) {
-        die('Must specify all parameters');
+        $response->getBody()->write(json_encode($response_body));
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
     $name = $params['name'];
@@ -177,18 +191,56 @@ $app->post('/submit_thing', function (Request $request, Response $response, $arg
     $description = $params['description'];
     $adult = filter_var($params['adult'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
+    // Reject duplicate names
+
+    $duplicate_name_statement = $conn->prepare('SELECT id FROM Things WHERE name = ? LIMIT 1');
+    $duplicate_name_statement->bind_param('s', $name);
+
+    if ($duplicate_name_statement->execute() === false) {
+        $response_body['status'] = 'error';
+        $response_body['message'] = 'Database error!';
+        $response->getBody()->write(json_encode($response_body));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    $result = $duplicate_name_statement->get_result();
+    if ($result->num_rows != 0) {
+        $response_body['rows'] = $result->num_rows;
+        $response_body['status'] = 'error';
+        $response_body['message'] = 'Name already used';
+        $response_body['param'] = 'name';
+        $response->getBody()->write(json_encode($response_body));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    // Validate image
+
+    if (!isImage($imageUrl)) {
+        $response_body['status'] = 'error';
+        $response_body['message'] = 'Image URL must point to a valid image';
+        $response_body['param'] = 'imageUrl';
+        $response->getBody()->write(json_encode($response_body));
+        return $response->withHeader('Content-Type', 'application/json');
+    }
+
+    // Submit thing
+
     $insert_statement = $conn->prepare("INSERT INTO Things (name, image_url, description, adult) VALUES (?, ?, ?, ?)");
     $insert_statement->bind_param("sssi", $name, $imageUrl, $description, $adult);
 
-    if ($insert_statement->execute() === TRUE) {
-        $log->info("New record created successfully");
-    } else {
-        $log->error("Error submitting thing: " . $conn->error);
-        die("Something went wrong");
+    if ($insert_statement->execute() === false) {
+        $log->error($insert_statement->error);
+
+        $response_body['status'] = 'error';
+        $response_body['message'] = 'Database error!';
+        $response->getBody()->write(json_encode($response_body));
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
     $log->info("Served '/submit_thing' endpoint");
 
+    $response_body['status'] = 'success';
+    $response->getBody()->write(json_encode($response_body));
     return $response->withHeader('Content-Type', 'application/json');
 });
 
@@ -200,3 +252,37 @@ $app->get('[/{params:.*}]', function ($request, $response, array $args) {
 $app->run();
 
 $conn->close();
+
+// Thank-you danio https://stackoverflow.com/questions/676949/best-way-to-determine-if-a-url-is-an-image-in-php
+function isImage($url)
+{
+    $params = array(
+        'http' => array(
+            'method' => 'HEAD'
+        )
+    );
+    $ctx = stream_context_create($params);
+    $fp = @fopen($url, 'rb', false, $ctx);
+    if (!$fp)
+        return false;  // Problem with url
+
+    $meta = stream_get_meta_data($fp);
+    if ($meta === false) {
+        fclose($fp);
+        return false;  // Problem reading data from url
+    }
+
+    $wrapper_data = $meta["wrapper_data"];
+    if (is_array($wrapper_data)) {
+        foreach (array_keys($wrapper_data) as $hh) {
+            if (substr($wrapper_data[$hh], 0, 19) == "Content-Type: image") // strlen("Content-Type: image") == 19 
+            {
+                fclose($fp);
+                return true;
+            }
+        }
+    }
+
+    fclose($fp);
+    return false;
+}
